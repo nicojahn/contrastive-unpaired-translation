@@ -4,3 +4,6 @@ dominate>=2.4.0
 visdom>=0.1.8.8
 packaging
 GPUtil>=1.4.0
+boto3>=1.20.0
+python-dotenv>=0.19.0
+setuptools>=39.0.0
