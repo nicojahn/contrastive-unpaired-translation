@@ -51,10 +51,10 @@ class UnalignedS3Dataset(BaseDataset):
             index_B = random.randint(0, self.B_size - 1)
 
         # begin: different
-        A_path, imgA = self.S3SourceDomain.__getitem__(index_A)
-        B_path, imgB = self.S3TargetDomain.__getitem__(index_B)
-        A = Image.open(io.BytesIO(imgA)).convert("RGB")
-        B = Image.open(io.BytesIO(imgB)).convert("RGB")
+        A_path, A_img = self.S3SourceDomain.__getitem__(index_A)
+        B_path, B_img = self.S3TargetDomain.__getitem__(index_B)
+        A = Image.open(io.BytesIO(A_img)).convert("RGB")
+        B = Image.open(io.BytesIO(B_img)).convert("RGB")
         # end: different
 
         # The following is the same as in 'unaligned_dataset.py'
