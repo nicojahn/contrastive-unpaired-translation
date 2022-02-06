@@ -57,7 +57,7 @@ class UnalignedS3Dataset(BaseDataset):
         B = Image.open(io.BytesIO(B_img)).convert("RGB")
         # end: different
 
-        # The following is the same as in 'unaligned_dataset.py'
+        # The following is almost the same as in 'unaligned_dataset.py'
         # Apply image transformation
         # For FastCUT mode, if in finetuning phase (learning rate is decaying),
         # do not perform resize-crop data augmentation of CycleGAN.
@@ -68,8 +68,8 @@ class UnalignedS3Dataset(BaseDataset):
             load_size=self.opt.crop_size if is_finetuning else self.opt.load_size,
         )
         transform = get_transform(modified_opt)
-        A = transform(A_img)
-        B = transform(B_img)
+        A = transform(A)
+        B = transform(B)
 
         return {"A": A, "B": B, "A_paths": A_path, "B_paths": B_path}
 
