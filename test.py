@@ -44,7 +44,6 @@ if __name__ == '__main__':
     opt.no_flip = True    # no flip; comment this line if results on flipped images are needed.
     opt.display_id = -1   # no visdom display; the test code saves the results to a HTML file.
     dataset = create_dataset(opt)  # create a dataset given opt.dataset_mode and other options
-    train_dataset = create_dataset(util.copyconf(opt, phase="train"))
     model = create_model(opt)      # create a model given opt.model and other options
     # create a webpage for viewing the results
     web_dir = os.path.join(opt.results_dir, opt.name, '{}_{}'.format(opt.phase, opt.epoch))  # define the website directory
@@ -66,5 +65,10 @@ if __name__ == '__main__':
         img_path = model.get_image_paths()     # get image paths
         if i % 5 == 0:  # save images to an HTML file
             print('processing (%04d)-th image... %s' % (i, img_path))
-        save_images(webpage, visuals, img_path, width=opt.display_winsize)
+        imgs_kwargs = [
+            {"onmouseover":"this.style.opacity=1;", "onmouseout":"this.style.opacity=0;", "style":"width:256px;opacity:0"},
+            {"style":"width:256px"},
+            {"style":"width:256px"},
+        ]
+        save_images(webpage, visuals, img_path, width=opt.display_winsize, imgs_kwargs=imgs_kwargs)
     webpage.save()  # save the HTML
