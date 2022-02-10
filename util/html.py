@@ -45,23 +45,29 @@ class HTML:
         with self.doc:
             h3(text)
 
-    def add_images(self, ims, txts, links, width=400):
+    def add_images(self, ims, txts, links, width=256, imgs_kwargs=None):
         """add images to the HTML file
 
         Parameters:
             ims (str list)   -- a list of image paths
             txts (str list)  -- a list of image names shown on the website
             links (str list) --  a list of hyperref links; when you click an image, it will redirect you to a new page
+            imgs_kwargs (dict list) -- a list of kwargs for the img tag
         """
+        if not imgs_kwargs:
+            imgs_kwargs = [{'style':'width:%dpx' % width}] *len(ims)
         self.t = table(border=1, style="table-layout: fixed;")  # Insert a table
         self.doc.add(self.t)
         with self.t:
             with tr():
-                for im, txt, link in zip(ims, txts, links):
+                for im, txt, link, imgs_kwarg in zip(ims, txts, links, imgs_kwargs):
                     with td(style="word-wrap: break-word;", halign="center", valign="top"):
                         with p():
                             with a(href=os.path.join('images', link)):
-                                img(style="width:%dpx" % width, src=os.path.join('images', im))
+                                imgs_kwarg['src'] = os.path.join('images', im)
+                                if 'style' not in imgs_kwarg:
+                                    imgs_kwarg['style'] = "width:%dpx" % width
+                                img(**imgs_kwarg)
                             br()
                             p(txt)
 
