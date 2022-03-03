@@ -398,9 +398,9 @@ class GANLoss(nn.Module):
             loss = self.loss(prediction, target_tensor)
         elif self.gan_mode == 'wgangp':
             if target_is_real:
-                loss = -prediction.mean()
-            else:
                 loss = prediction.mean()
+            else:
+                loss = -prediction.mean()
         elif self.gan_mode == 'nonsaturating':
             if target_is_real:
                 loss = F.softplus(-prediction).view(bs, -1).mean(dim=1)
