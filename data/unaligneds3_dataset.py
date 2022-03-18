@@ -2,31 +2,42 @@ from data.base_dataset import BaseDataset, get_transform
 
 from awsio.python.lib.io.s3.s3dataset import S3Dataset as S3DS
 import os
-from dotenv import load_dotenv
 from PIL import Image
 import io
 import random
 import util.util as util
 
 
-load_dotenv()
-A_BUCKET = os.getenv("A_BUCKET")
-B_BUCKET = os.getenv("B_BUCKET")
-A_PATH = os.getenv("A_PATH")
-B_PATH = os.getenv("B_PATH")
-
-
 class UnalignedS3Dataset(BaseDataset):
-    def __init__(self, opt):
+    @staticmethod
+    def modify_commandline_options(parser, is_train):
+        """Add new dataset-specific options, and rewrite default values for existing options.
+
+        Parameters:
+            parser          -- original option parser
+            is_train (bool) -- whether training phase or test phase. You can use this flag to add training-specific or test-specific options.
+
+        Returns:
+            the modified parser.
+        """
+        parser.add_argument("--s3_path_A", nargs=1, metavar=("bucket/path"), type=str, required=True, help="")
+        parser.add_argument("--s3_path_B", nargs=1, metavar=("bucket/path"), type=str, required=True, help="")
+        return parser
+
+    def __init__(self, opt, s3_path_A=None, s3_path_B=None):
         """Initialize this dataset class. Creating two S3 dataset instances with different paths (or potentially S3 Buckets)
 
         Parameters:
             opt (Option class) -- stores all the experiment flags; needs to be a subclass of BaseOptions
         """
         BaseDataset.__init__(self, opt)
+        if s3_path_A is None:
+            s3_path_A = "s3://" + self.opt.s3_path_A
+        if s3_path_B is None:
+            s3_path_B = "s3://" + self.opt.s3_path_B
 
-        self.S3SourceDomain = S3DS("s3://" + os.path.join(A_BUCKET, A_PATH))
-        self.S3TargetDomain = S3DS("s3://" + os.path.join(B_BUCKET, B_PATH))
+        self.S3SourceDomain = S3DS(s3_path_A)
+        self.S3TargetDomain = S3DS(s3_path_B)
         self.A_size = len(self.S3SourceDomain)
         self.B_size = len(self.S3TargetDomain)
 
