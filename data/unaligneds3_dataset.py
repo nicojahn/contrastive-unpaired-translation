@@ -20,8 +20,8 @@ class UnalignedS3Dataset(BaseDataset):
         Returns:
             the modified parser.
         """
-        parser.add_argument("--s3_path_A", nargs=1, metavar=("bucket/path"), type=str, required=True, help="")
-        parser.add_argument("--s3_path_B", nargs=1, metavar=("bucket/path"), type=str, required=True, help="")
+        parser.add_argument("--s3_path_A", type=str, required=True, help="")
+        parser.add_argument("--s3_path_B", type=str, required=True, help="")
         return parser
 
     def __init__(self, opt, s3_path_A=None, s3_path_B=None):
