@@ -22,6 +22,9 @@ class UnalignedS3Dataset(BaseDataset):
         """
         parser.add_argument("--s3_path_A", type=str, required=True, help="")
         parser.add_argument("--s3_path_B", type=str, required=True, help="")
+        parser.add_argument("--grayscale", action="store_true", help="")
+        # Using as: https://pillow.readthedocs.io/en/stable/reference/Image.html#PIL.Image.Resampling
+        parser.add_argument("--rescale_method", type=str, default="BICUBIC", choices=["NEAREST", "BOX", "BILINEAR", "HAMMING", "BICUBIC", "LANCZOS"], help="")
         return parser
 
     def __init__(self, opt, s3_path_A=None, s3_path_B=None):
@@ -40,6 +43,9 @@ class UnalignedS3Dataset(BaseDataset):
         self.S3TargetDomain = S3DS(s3_path_B)
         self.A_size = len(self.S3SourceDomain)
         self.B_size = len(self.S3TargetDomain)
+
+        self.grayscale = self.opt.grayscale
+        self.method = getattr(Image.Resampling, self.opt.rescale_method.upper())
 
     def __getitem__(self, index):
         """Basically the same as in 'unaligned_dataset.py'. But instead reading from paths, reading from S3 datasets.
@@ -78,7 +84,7 @@ class UnalignedS3Dataset(BaseDataset):
             self.opt,
             load_size=self.opt.crop_size if is_finetuning else self.opt.load_size,
         )
-        transform = get_transform(modified_opt)
+        transform = get_transform(modified_opt, grayscale=self.grayscale, method=self.method)
         A = transform(A)
         B = transform(B)
 
