@@ -3,8 +3,7 @@ from .cycle_gan_model import CycleGANModel
 from options.train_options import TrainOptions        
 import argparse
 
-
-class CycleGANInferenceModel(CycleGANModel, InferenceModel):
+class CycleGANInferenceModel(InferenceModel, CycleGANModel):
     @staticmethod
     def modify_commandline_options(parser, is_train=True):
         parser = CycleGANModel.modify_commandline_options(parser, is_train=True)

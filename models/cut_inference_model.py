@@ -3,8 +3,7 @@ from .cut_model import CUTModel
 from options.train_options import TrainOptions
 import argparse
 
-
-class CUTInferenceModel(CUTModel, InferenceModel):
+class CUTInferenceModel(InferenceModel, CUTModel):
     @staticmethod
     def modify_commandline_options(parser, is_train=True):
         parser = CUTModel.modify_commandline_options(parser, is_train=True)
