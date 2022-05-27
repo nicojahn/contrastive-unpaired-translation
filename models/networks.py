@@ -885,6 +885,31 @@ class LinearBlock(nn.Module):
         return out
 
 ##################################################################################
+# Straight-Through Estimators
+# Full credits go to Hassan Askary:
+# https://www.hassanaskary.com/python/pytorch/deep%20learning/2020/09/19/intuitive-explanation-of-straight-through-estimators.html#implementation-in-pytorch
+##################################################################################
+
+class STEFunction(torch.autograd.Function):
+    @staticmethod
+    def forward(ctx, input):
+        return (input > 0).float()
+
+    @staticmethod
+    def backward(ctx, grad_output):
+        # Instead of the hard tanh, which Hassan suggested, we stick to the original implementation
+        # return F.hardtanh(grad_output)
+        return grad_output
+
+class StraightThroughEstimator(nn.Module):
+    def __init__(self):
+        super(StraightThroughEstimator, self).__init__()
+
+    def forward(self, x):
+        x = STEFunction.apply(x)
+        return x
+
+##################################################################################
 # Normalization layers
 ##################################################################################
 
@@ -981,6 +1006,9 @@ class ResnetGenerator(nn.Module):
         model += [nn.ReflectionPad2d(3)]
         model += [nn.Conv2d(ngf, output_nc, kernel_size=7, padding=0)]
         model += [nn.Tanh()]
+        
+        if hasattr(self.opt, "binarize"):
+            model += [StraightThroughEstimator()]
 
         self.model = nn.Sequential(*model)
 
