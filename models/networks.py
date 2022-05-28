@@ -898,8 +898,8 @@ class STEFunction(torch.autograd.Function):
     @staticmethod
     def backward(ctx, grad_output):
         # Instead of the hard tanh, which Hassan suggested, we stick to the original implementation
-        # return F.hardtanh(grad_output)
-        return grad_output
+        return F.hardtanh(grad_output)
+        # return grad_output
 
 class StraightThroughEstimator(nn.Module):
     def __init__(self):
@@ -1005,10 +1005,11 @@ class ResnetGenerator(nn.Module):
                           nn.ReLU(True)]
         model += [nn.ReflectionPad2d(3)]
         model += [nn.Conv2d(ngf, output_nc, kernel_size=7, padding=0)]
-        model += [nn.Tanh()]
         
         if hasattr(self.opt, "binarize"):
             model += [StraightThroughEstimator()]
+        else:
+            model += [nn.Tanh()]
 
         self.model = nn.Sequential(*model)
 
