@@ -1007,7 +1007,7 @@ class ResnetGenerator(nn.Module):
         model += [nn.Conv2d(ngf, output_nc, kernel_size=7, padding=0)]
         
         if hasattr(self.opt, "binarize"):
-            model += [StraightThroughEstimator()]
+            model += [nn.Hardtanh()]
         else:
             model += [nn.Tanh()]
 
