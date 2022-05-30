@@ -893,13 +893,13 @@ class LinearBlock(nn.Module):
 class STEFunction(torch.autograd.Function):
     @staticmethod
     def forward(ctx, input):
-        return (input > 0).float()
+        return (input > 0).float() * 2 - 1
 
     @staticmethod
     def backward(ctx, grad_output):
         # Instead of the hard tanh, which Hassan suggested, we stick to the original implementation
-        return torch.tanh(grad_output)
-        # return grad_output
+        # return torch.tanh(grad_output)
+        return grad_output
 
 class StraightThroughEstimator(nn.Module):
     def __init__(self):
