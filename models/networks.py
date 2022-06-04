@@ -906,7 +906,11 @@ class StraightThroughEstimator(nn.Module):
         super(StraightThroughEstimator, self).__init__()
 
     def forward(self, x):
-        x = STEFunction.apply(x)
+        # x = STEFunction.apply(x)
+        x_backward = torch.tanh(x)
+        x_forward = (x > 0).float() * 2 - 1
+        
+        x = x_backward + (x_forward - x_backward).detach()
         return x
 
 ##################################################################################
