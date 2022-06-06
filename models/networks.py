@@ -889,26 +889,17 @@ class LinearBlock(nn.Module):
 # Full credits go to Hassan Askary:
 # https://www.hassanaskary.com/python/pytorch/deep%20learning/2020/09/19/intuitive-explanation-of-straight-through-estimators.html#implementation-in-pytorch
 ##################################################################################
-
-class STEFunction(torch.autograd.Function):
-    @staticmethod
-    def forward(ctx, input):
-        return (input > 0).float() * 2 - 1
-
-    @staticmethod
-    def backward(ctx, grad_output):
-        # Instead of the hard tanh, which Hassan suggested, we stick to the original implementation
-        # return torch.tanh(grad_output)
-        return grad_output
-
 class StraightThroughEstimator(nn.Module):
-    def __init__(self):
+    def __init__(self, linear=False):
         super(StraightThroughEstimator, self).__init__()
+        self.linear = linear
 
     def forward(self, x):
-        # x = STEFunction.apply(x)
         x_backward = torch.tanh(x)
-        x_forward = (x > 0).float() * 2 - 1
+        if self.linear:
+            x_forward = F.hardtanh(x)
+        else:
+            x_forward = (x > 0).float() * 2 - 1
         
         x = x_backward + (x_forward - x_backward).detach()
         return x
@@ -1011,7 +1002,7 @@ class ResnetGenerator(nn.Module):
         model += [nn.Conv2d(ngf, output_nc, kernel_size=7, padding=0)]
         
         if self.opt.binarize:
-            model += [StraightThroughEstimator()]
+            model += [StraightThroughEstimator(self.opt.linear)]
         else:
             model += [nn.Tanh()]
 
@@ -1239,7 +1230,7 @@ class UnetGenerator(nn.Module):
         unet_block = UnetSkipConnectionBlock(ngf * 4, ngf * 8, input_nc=None, submodule=unet_block, norm_layer=norm_layer)
         unet_block = UnetSkipConnectionBlock(ngf * 2, ngf * 4, input_nc=None, submodule=unet_block, norm_layer=norm_layer)
         unet_block = UnetSkipConnectionBlock(ngf, ngf * 2, input_nc=None, submodule=unet_block, norm_layer=norm_layer)
-        self.model = UnetSkipConnectionBlock(output_nc, ngf, input_nc=input_nc, submodule=unet_block, outermost=True, norm_layer=norm_layer, binarize=self.opt.binarize)  # add the outermost layer
+        self.model = UnetSkipConnectionBlock(output_nc, ngf, input_nc=input_nc, submodule=unet_block, outermost=True, norm_layer=norm_layer, binarize=self.opt.binarize, linear=self.opt.linear)  # add the outermost layer
 
     def forward(self, input, layers=[], encode_only=False):
         if -1 in layers:
@@ -1274,7 +1265,7 @@ class UnetSkipConnectionBlock(nn.Module):
     """
 
     def __init__(self, outer_nc, inner_nc, input_nc=None,
-                 submodule=None, outermost=False, innermost=False, norm_layer=nn.BatchNorm2d, use_dropout=False, binarize=False):
+                 submodule=None, outermost=False, innermost=False, norm_layer=nn.BatchNorm2d, use_dropout=False, binarize=False, linear=False):
         """Construct a Unet submodule with skip connections.
 
         Parameters:
@@ -1310,7 +1301,7 @@ class UnetSkipConnectionBlock(nn.Module):
             up = [uprelu, upconv]
 
             if binarize:
-                up += [StraightThroughEstimator()]
+                up += [StraightThroughEstimator(linear)]
             else:
                 up += [nn.Tanh()]
 

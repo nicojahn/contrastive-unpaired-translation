@@ -66,6 +66,7 @@ class BaseOptions():
         parser.add_argument('--suffix', default='', type=str, help='customized suffix: opt.name = opt.name + suffix: e.g., {model}_{netG}_size{load_size}')
         # addition for binary images
         parser.add_argument("--binarize", type=util.str2bool, nargs='?', const=True, default=False, help="Binarizes generator output")
+        parser.add_argument("--linear", type=util.str2bool, nargs='?', const=True, default=False, help="Uses Hardtanh for binarized generator output")
 
         # parameters related to StyleGAN2-based networks
         parser.add_argument('--stylegan2_G_num_downsampling',
