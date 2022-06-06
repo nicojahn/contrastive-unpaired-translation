@@ -1241,9 +1241,30 @@ class UnetGenerator(nn.Module):
         unet_block = UnetSkipConnectionBlock(ngf, ngf * 2, input_nc=None, submodule=unet_block, norm_layer=norm_layer)
         self.model = UnetSkipConnectionBlock(output_nc, ngf, input_nc=input_nc, submodule=unet_block, outermost=True, norm_layer=norm_layer, binarize=self.opt.binarize)  # add the outermost layer
 
-    def forward(self, input):
-        """Standard forward"""
-        return self.model(input)
+    def forward(self, input, layers=[], encode_only=False):
+        if -1 in layers:
+            layers.append(len(self.model))
+        if len(layers) > 0:
+            feat = input
+            feats = []
+            for layer_id, layer in enumerate(self.model):
+                # print(layer_id, layer)
+                feat = layer(feat)
+                if layer_id in layers:
+                    # print("%d: adding the output of %s %d" % (layer_id, layer.__class__.__name__, feat.size(1)))
+                    feats.append(feat)
+                else:
+                    # print("%d: skipping %s %d" % (layer_id, layer.__class__.__name__, feat.size(1)))
+                    pass
+                if layer_id == layers[-1] and encode_only:
+                    # print('encoder only return features')
+                    return feats  # return intermediate features alone; stop in the last layers
+
+            return feat, feats  # return both output and intermediate features
+        else:
+            """Standard forward"""
+            fake = self.model(input)
+            return fake
 
 
 class UnetSkipConnectionBlock(nn.Module):
